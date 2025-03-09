@@ -1,0 +1,42 @@
+# Smart File MCP Server Docker Compose Configuration
+# This file defines the services, networks, and volumes for running the MCP server
+# using Docker Compose.
+
+version: '3.8'
+
+services:
+  # Main MCP Server service
+  # This service runs the MCP server and exposes it on port 8000
+  mcp-server:
+    # Build the Docker image from the current directory
+    build: .
+    # Map host port 8000 to container port 8000
+    ports:
+      - "8000:8000"
+    # Mount volumes for persisting data and monitoring files
+    volumes:
+      # Mount the current directory to /app in the container for development
+      - ./:/app
+      # Mount the watch directory for file monitoring
+      # Use the WATCH_DIR environment variable or default to ./watch_dir
+      - ${WATCH_DIR:-./watch_dir}:/watch
+    # Environment variables for the container
+    environment:
+      # API keys for AI providers
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # AI provider configuration
+      - AI_PROVIDER=${AI_PROVIDER:-anthropic}
+      # Server configuration
+      - SERVER_HOST=0.0.0.0  # Bind to all interfaces inside the container
+      - SERVER_PORT=8000
+      # Security configuration
+      - API_KEY_ENABLED=${API_KEY_ENABLED:-false}
+      - API_KEY=${API_KEY}
+      # File monitoring configuration
+      - WATCH_DIRECTORIES=/watch
+      - FILE_PATTERNS=${FILE_PATTERNS:-*.py,*.js,*.txt}
+      # Logging configuration
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    # Restart policy - keep the container running unless stopped manually
+    restart: unless-stopped 
